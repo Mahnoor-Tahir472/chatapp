@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Home</title>
+    <style>
+body{
+      background-color: #696188;
+}
+#users {
+        display: flex;
+        flex-direction: column;
+        align-items: center; 
+
+      }
+
+
+      #users p {
+        background-color: #ffffff;
+        color: white;
+        padding: 15px 40px;
+        text-align: center;
+        text-decoration: none;
+        font-size: 16px;
+        cursor: pointer;
+        font-weight: bold;
+        border: none;
+        width: 800px; 
+        border-radius: 50px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        transition: background-color 0.3s ease, transform 0.2s ease;
+        margin-bottom: 10px;
+      }
+
+
+      #users p:hover {
+        background-color: #565067;
+        transform: translateY(-2px); 
+      }
+      #logout-container {
+        display: flex;
+        flex-direction: column;
+        align-items: center; 
+        margin-top: 50px;
+
+      }
+       #logout {
+            width: 100%;
+            padding: 12px;
+            background-color:#ffffff;
+            border: none;
+            border-radius: 4px;
+            text-align: center;
+            color: #696188;
+            font-weight: bold;
+            font-size: 16px;
+            width: 400px;
+            border-radius: 50px;
+            display: flex;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+            justify-content: center;
+            align-items: center;
+        }
+        #logout:hover {
+            background-color:#565067;
+            transform: translateY(-2px); 
+        }
+
+    </style>
+</head>
+<body>
+    <div id="users"></div>
+    <div id="logout-container">
+        <button id="logout" type="submit" >Logout</button>
+    </div>
+
+    <script src="helper.js"></script>
+    <script src="logout.js"></script>
+    <script>
+        async function LoadUser() {
+            try {
+                const response = await fetch('http://127.0.0.1:8000/getallusers/', {
+                    credentials: "include"
+                });
+                console.log(response);
+                
+                if (!response.ok) {
+                    alert("Failed to fetch users");
+                    return;
+                }
+
+                const data = await response.json();
+                console.log(data);
+
+                let html = "";
+                data.forEach(user => {
+                    html += `<p style="cursor:pointer; color:black;" onclick="createroom(${user.id})">${user.username}</p>`;
+                });
+
+                document.getElementById('users').innerHTML = html;
+            } catch (error) {
+                console.error("Error fetching users:", error);
+            }
+        }
+
+        // Load users when the DOM is fully loaded
+        document.addEventListener('DOMContentLoaded', function() {
+            LoadUser();
+        });
+
+        async function createroom(UserId) {
+            const csrftoken=get_Cookie('csrftoken');
+            const response = await fetch('http://127.0.0.1:8000/createroom/',{
+            method : "POST",
+            credentials :"include",
+            headers :{
+                "Content-Type" : "application/json",
+                "X-CSRFToken" : csrftoken
+            },
+            body: JSON.stringify({
+                "user_id" : UserId
+            })
+
+           });
+           const data=await response.json()
+           console.log(data);
+           window.localStorage.setItem("room_id", data.room.id);
+           window.location.href="message.html";
+                   
+        }
+    </script>
+</body>
+</html>
